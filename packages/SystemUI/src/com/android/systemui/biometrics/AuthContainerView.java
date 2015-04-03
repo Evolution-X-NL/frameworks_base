@@ -65,6 +65,7 @@ import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.widget.LockPatternUtils;
+import com.android.internal.widget.LockPatternView;
 import com.android.systemui.biometrics.AuthController.ScaleFactorProvider;
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor;
 import com.android.systemui.biometrics.plugins.AuthContextPlugins;
@@ -480,26 +481,24 @@ public class AuthContainerView extends LinearLayout
         }
         // TODO(b/288175645): Once AuthContainerView is removed, set 0dp in credential view xml
         //  files with the corresponding left/right or top/bottom constraints being set to "parent".
-        if (Flags.bpFallbackOptions()) {
-            final FrameLayout credentialView = mLayout.findViewById(R.id.credential_view);
-            mCredentialView = factory.inflate(layoutResourceId, credentialView, false);
-            final CredentialViewModel vm = mCredentialViewModelProvider.get();
-            ((CredentialView) mCredentialView).init(vm, this, mPanelController, false,
-                    mBiometricCallback, mAuthContextPlugins);
-            credentialView.addView(mCredentialView);
-        } else {
-            mCredentialView = factory.inflate(layoutResourceId, mLayout, false);
-            // The background is used for detecting taps / cancelling authentication. Since the
-            // credential view is full-screen and should not be canceled from background taps,
-            // disable it.
-            mBackgroundView.setOnClickListener(null);
-            mBackgroundView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
-            final CredentialViewModel vm = mCredentialViewModelProvider.get();
-            vm.setAnimateContents(animateContents);
-            ((CredentialView) mCredentialView).init(vm, this, mPanelController, animatePanel,
-                    mBiometricCallback, mAuthContextPlugins);
-            mLayout.addView(mCredentialView);
+        mCredentialView = factory.inflate(layoutResourceId, mLayout, false);
+        if (credentialType instanceof PromptKind.Pattern) {
+            LockPatternView lockPatternView = mCredentialView.findViewById(R.id.lockPattern);
+            lockPatternView.setLockPatternSize(
+                    mLockPatternUtils.getLockPatternSize(mConfig.mUserId));
         }
+
+        // The background is used for detecting taps / cancelling authentication. Since the
+        // credential view is full-screen and should not be canceled from background taps,
+        // disable it.
+        mBackgroundView.setOnClickListener(null);
+        mBackgroundView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        final CredentialViewModel vm = mCredentialViewModelProvider.get();
+        vm.setAnimateContents(animateContents);
+        ((CredentialView) mCredentialView).init(vm, this, mPanelController, animatePanel,
+                mBiometricCallback, mAuthContextPlugins);
+
+        mLayout.addView(mCredentialView);
     }
 
     /** Removes the credential view from the biometric prompt */
