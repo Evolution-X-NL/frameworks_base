@@ -595,6 +595,8 @@ android_library {
     javacflags: [
         "-Aroom.schemaLocation=frameworks/base/packages/SystemUI/schemas",
     ],
+    manifest: "AndroidManifest.xml",
+    additional_manifests: ["LineageManifest.xml"],
 }
 
 platform_compat_config {
