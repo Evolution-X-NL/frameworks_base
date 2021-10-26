@@ -123,6 +123,62 @@ public class CastTileTest extends SysuiTestCase {
 
     // -------------------------------------------------
     // All these tests for enabled/disabled wifi have hotspot not enabled
+    @Test
+    public void testStateUnavailable_wifiDisabled() {
+        createAndStartTileOldImpl();
+        IconState qsIcon = new IconState(false, 0, "");
+        WifiIndicators indicators = new WifiIndicators(
+                false, mock(IconState.class),
+                qsIcon, false, false, "",
+                false, "", true);
+        mSignalCallback.setWifiIndicators(indicators);
+        mTestableLooper.processAllMessages();
+
+        assertEquals(Tile.STATE_UNAVAILABLE, mCastTile.getState().state);
+    }
+
+    @Test
+    public void testStateUnavailable_wifiNotConnected() {
+        createAndStartTileOldImpl();
+        IconState qsIcon = new IconState(false, 0, "");
+        WifiIndicators indicators = new WifiIndicators(
+                true, mock(IconState.class),
+                qsIcon, false, false, "",
+                false, "", true);
+        mSignalCallback.setWifiIndicators(indicators);
+        mTestableLooper.processAllMessages();
+
+        assertEquals(Tile.STATE_UNAVAILABLE, mCastTile.getState().state);
+    }
+
+    private void enableWifiAndProcessMessages() {
+        IconState qsIcon = new IconState(true, 0, "");
+        WifiIndicators indicators = new WifiIndicators(
+                true, mock(IconState.class),
+                qsIcon, false, false, "",
+                false, "", true);
+        mSignalCallback.setWifiIndicators(indicators);
+        mTestableLooper.processAllMessages();
+    }
+
+    @Test
+    public void testStateActive_wifiEnabledAndCasting() {
+        createAndStartTileOldImpl();
+        CastDevice device = createConnectedCastDevice();
+        List<CastDevice> devices = new ArrayList<>();
+        devices.add(device);
+        when(mController.getCastDevices()).thenReturn(devices);
+
+        enableWifiAndProcessMessages();
+        assertEquals(Tile.STATE_ACTIVE, mCastTile.getState().state);
+    }
+
+    @Test
+    public void testStateInactive_wifiEnabledNotCasting() {
+        createAndStartTileOldImpl();
+        enableWifiAndProcessMessages();
+        assertEquals(Tile.STATE_INACTIVE, mCastTile.getState().state);
+    }
 
     @Test
     public void stateUnavailable_noDefaultNetworks_newPipeline() {
