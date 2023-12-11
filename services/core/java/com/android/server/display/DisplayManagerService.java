@@ -2665,13 +2665,9 @@ public final class DisplayManagerService extends SystemService {
         try {
             handleLogicalDisplayChangedLocked(display);
 
-            final int displayId = display.getDisplayIdLocked();
-            if (displayId == Display.DEFAULT_DISPLAY) {
-                notifyDefaultDisplayDeviceUpdated(display);
-            }
-            mHandler.sendEmptyMessage(MSG_LOAD_BRIGHTNESS_CONFIGURATIONS);
-        } finally {
-            Trace.traceEnd(Trace.TRACE_TAG_POWER);
+        final int displayId = display.getDisplayIdLocked();
+        if (displayId == Display.DEFAULT_DISPLAY) {
+            notifyDefaultDisplayDeviceUpdated(display);
         }
     }
 
