@@ -30,6 +30,7 @@ import com.android.app.displaylib.ExternalDisplayConnectionType.DESKTOP
 import com.android.app.displaylib.ExternalDisplayConnectionType.MIRROR
 import com.android.app.displaylib.ExternalDisplayConnectionType.NOT_SPECIFIED
 import com.android.app.tracing.coroutines.launchTraced as launch
+import android.os.SystemProperties
 import com.android.server.policy.feature.flags.Flags
 import com.android.systemui.CoreStartable
 import com.android.systemui.biometrics.Utils
@@ -128,6 +129,12 @@ constructor(
         concurrentDisplaysInProgress: Boolean,
     ) {
         dismissDialog()
+
+        if (SystemProperties.getBoolean(DISABLE_MIRRORING_CONFIRMATION_DIALOG, false)) {
+            scope.launch(context = bgDispatcher) { pendingDisplay.enable() }
+            return
+        }
+
         dialog =
             bottomSheetFactoryDeprecated
                 .createDialog(
@@ -273,5 +280,10 @@ constructor(
 
     private companion object {
         const val TAG: String = "ConnectingDisplayViewModel"
+    }
+
+    companion object {
+        private const val DISABLE_MIRRORING_CONFIRMATION_DIALOG =
+            "persist.sysui.disable_mirroring_confirmation_dialog"
     }
 }
