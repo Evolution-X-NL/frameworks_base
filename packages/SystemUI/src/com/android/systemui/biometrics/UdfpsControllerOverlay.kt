@@ -114,6 +114,16 @@ constructor(
     private var overlayTouchListener: TouchExplorationStateChangeListener? = null
     private var overlayAttachStateListener: OnAttachStateChangeListener? = null
 
+    private val useFrameworkDimming = context.resources.getBoolean(
+        com.android.systemui.res.R.bool.config_udfpsFrameworkDimming
+    )
+
+    private val udfpsHelper: UdfpsHelper? = if (useFrameworkDimming) {
+        UdfpsHelper(context, windowManager, shadeInteractor, requestReason)
+    } else {
+        null
+    }
+
     private val coreLayoutParams =
         WindowManager.LayoutParams(
                 WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL,
@@ -242,6 +252,7 @@ constructor(
     }
 
     private fun addViewNowOrLater(view: View, animation: UdfpsAnimationViewController<*>?) {
+        udfpsHelper?.addDimLayer()
         addViewRunnable =
             kotlinx.coroutines.Runnable {
                 Trace.setCounter("UdfpsAddView", 1)
@@ -291,6 +302,7 @@ constructor(
             }
         }
         udfpsDisplayModeProvider.disable(null)
+        udfpsHelper?.removeDimLayer()
         getTouchOverlay()?.apply {
             if (this.parent != null) {
                 if (Build.IS_DEBUGGABLE) {
