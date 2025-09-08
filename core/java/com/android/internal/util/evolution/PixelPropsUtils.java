@@ -391,6 +391,11 @@ public final class PixelPropsUtils {
             return;
         }
 
+        if (android.os.Process.isIsolated()) {
+            if (DEBUG) Log.d(TAG, "Skipping setProps in isolated process");
+            return;
+        }
+
         sStockFp = res.getString(R.string.config_stockFingerprint);
         if (sStockFp == null || sStockFp.isEmpty()) {
             sStockFp = SystemProperties.get("ro.build.fingerprint", "");
@@ -819,6 +824,11 @@ public final class PixelPropsUtils {
     }
 
     public static void onEngineGetCertificateChain() {
+        if (android.os.Process.isIsolated()) {
+            if (DEBUG) Log.d(TAG, "Skipping onEngineGetCertificateChain in isolated process");
+            return;
+        }
+
         Context context = ActivityThread.currentApplication() != null
                 ? ActivityThread.currentApplication().getApplicationContext()
                 : null;
