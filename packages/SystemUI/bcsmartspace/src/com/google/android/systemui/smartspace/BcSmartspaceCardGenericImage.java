@@ -1,13 +1,11 @@
 package com.google.android.systemui.smartspace;
 
-import android.app.smartspace.SmartspaceAction;
 import android.app.smartspace.SmartspaceTarget;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -24,64 +22,68 @@ public class BcSmartspaceCardGenericImage extends BcSmartspaceCardSecondary {
         super(context);
     }
 
-    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
-    public void setTextColor(int i) {}
-
-    public BcSmartspaceCardGenericImage(Context context, AttributeSet attributeSet) {
-        super(context, attributeSet);
+    public BcSmartspaceCardGenericImage(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
-    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        mImageView = findViewById(R.id.image_view);
+    }
+
     public void resetUi() {
-        this.mImageView.setImageBitmap(null);
+        mImageView.setImageBitmap(null);
     }
 
     public void setImageBitmap(Bitmap bitmap) {
-        this.mImageView.setImageBitmap(bitmap);
+        mImageView.setImageBitmap(bitmap);
     }
 
-    public void onFinishInflate() {
-        super.onFinishInflate();
-        this.mImageView = (ImageView) findViewById(R.id.image_view);
-    }
-
-    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
+    @Override
     public boolean setSmartspaceActions(
-            SmartspaceTarget smartspaceTarget,
-            BcSmartspaceDataPlugin.SmartspaceEventNotifier smartspaceEventNotifier,
-            BcSmartspaceCardLoggingInfo bcSmartspaceCardLoggingInfo) {
-        Bundle extras;
-        SmartspaceAction baseAction = smartspaceTarget.getBaseAction();
-        if (baseAction == null) {
-            extras = null;
-        } else {
-            extras = baseAction.getExtras();
-        }
+            SmartspaceTarget target,
+            BcSmartspaceDataPlugin.SmartspaceEventNotifier eventNotifier,
+            BcSmartspaceCardLoggingInfo loggingInfo) {
+        Bundle extras = target.getBaseAction() != null ? target.getBaseAction().getExtras() : null;
         if (extras != null && extras.containsKey("imageBitmap")) {
             if (extras.containsKey("imageScaleType")) {
-                String string = extras.getString("imageScaleType");
+                String scaleType = extras.getString("imageScaleType");
                 try {
-                    this.mImageView.setScaleType(ImageView.ScaleType.valueOf(string));
+                    mImageView.setScaleType(ImageView.ScaleType.valueOf(scaleType));
                 } catch (IllegalArgumentException e) {
-                    Log.e("SmartspaceGenericImg", "Invalid imageScaleType value: " + string);
+                    Log.w("SmartspaceGenericImg", "Invalid imageScaleType value: " + scaleType);
                 }
             }
+
             String dimensionRatio = BcSmartSpaceUtil.getDimensionRatio(extras);
             if (dimensionRatio != null) {
-                ((ConstraintLayout.LayoutParams) this.mImageView.getLayoutParams()).dimensionRatio =
-                        dimensionRatio;
+                ConstraintLayout.LayoutParams params =
+                        (ConstraintLayout.LayoutParams) mImageView.getLayoutParams();
+                params.dimensionRatio = dimensionRatio;
             }
+
             if (extras.containsKey("imageLayoutWidth")) {
-                ((ViewGroup.MarginLayoutParams) this.mImageView.getLayoutParams()).width =
-                        extras.getInt("imageLayoutWidth");
+                ConstraintLayout.LayoutParams params =
+                        (ConstraintLayout.LayoutParams) mImageView.getLayoutParams();
+                params.width = extras.getInt("imageLayoutWidth");
             }
+
             if (extras.containsKey("imageLayoutHeight")) {
-                ((ViewGroup.MarginLayoutParams) this.mImageView.getLayoutParams()).height =
-                        extras.getInt("imageLayoutHeight");
+                ConstraintLayout.LayoutParams params =
+                        (ConstraintLayout.LayoutParams) mImageView.getLayoutParams();
+                params.height = extras.getInt("imageLayoutHeight");
             }
-            setImageBitmap((Bitmap) extras.get("imageBitmap"));
+
+            Bitmap bitmap = (Bitmap) extras.get("imageBitmap");
+            setImageBitmap(bitmap);
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void setTextColor(int color) {
+        // No-op
     }
 }

@@ -23,6 +23,7 @@ android_library {
     static_libs: [
         "bcsmartspace-res",
         "smartspace-proto-java",
+        "smartspace-proto-lite-java",
         "SystemUIPluginLib",
         "SystemUISharedLib",
         "SystemUI-statsd",

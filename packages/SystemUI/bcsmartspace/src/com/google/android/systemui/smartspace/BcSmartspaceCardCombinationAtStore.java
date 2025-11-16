@@ -23,17 +23,16 @@ public class BcSmartspaceCardCombinationAtStore extends BcSmartspaceCardCombinat
         super(context, attributeSet);
     }
 
-    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardCombination,
-              // com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
+    @Override
     public final boolean setSmartspaceActions(
             SmartspaceTarget smartspaceTarget,
             BcSmartspaceDataPlugin.SmartspaceEventNotifier smartspaceEventNotifier,
             BcSmartspaceCardLoggingInfo bcSmartspaceCardLoggingInfo) {
         SmartspaceAction smartspaceAction;
-        List<SmartspaceAction> actionChips = smartspaceTarget.getActionChips();
+        List actionChips = smartspaceTarget.getActionChips();
         if (actionChips == null
                 || actionChips.isEmpty()
-                || (smartspaceAction = actionChips.get(0)) == null) {
+                || (smartspaceAction = (SmartspaceAction) actionChips.get(0)) == null) {
             return false;
         }
         ConstraintLayout constraintLayout = this.mFirstSubCard;

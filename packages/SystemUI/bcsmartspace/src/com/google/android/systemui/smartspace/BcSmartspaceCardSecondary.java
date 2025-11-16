@@ -13,13 +13,6 @@ import com.google.android.systemui.smartspace.logging.BcSmartspaceCardLoggingInf
 public abstract class BcSmartspaceCardSecondary extends ConstraintLayout {
     public String mPrevSmartspaceTargetId;
 
-    public abstract boolean setSmartspaceActions(
-            SmartspaceTarget smartspaceTarget,
-            BcSmartspaceDataPlugin.SmartspaceEventNotifier smartspaceEventNotifier,
-            BcSmartspaceCardLoggingInfo bcSmartspaceCardLoggingInfo);
-
-    public abstract void setTextColor(int i);
-
     public BcSmartspaceCardSecondary(Context context) {
         super(context);
         this.mPrevSmartspaceTargetId = "";
@@ -30,5 +23,20 @@ public abstract class BcSmartspaceCardSecondary extends ConstraintLayout {
         this.mPrevSmartspaceTargetId = "";
     }
 
+    public final void reset(String str) {
+        if (this.mPrevSmartspaceTargetId.equals(str)) {
+            return;
+        }
+        this.mPrevSmartspaceTargetId = str;
+        resetUi();
+    }
+
     public void resetUi() {}
+
+    public abstract boolean setSmartspaceActions(
+            SmartspaceTarget smartspaceTarget,
+            BcSmartspaceDataPlugin.SmartspaceEventNotifier smartspaceEventNotifier,
+            BcSmartspaceCardLoggingInfo bcSmartspaceCardLoggingInfo);
+
+    public abstract void setTextColor(int i);
 }
