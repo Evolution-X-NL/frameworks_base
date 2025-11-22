@@ -68,6 +68,20 @@ public final class PixelPropsUtils {
     private static final String PACKAGE_NEXUS_LAUNCHER = "com.google.android.apps.nexuslauncher";
     private static final String PACKAGE_QSB = "com.google.android.googlequicksearchbox";
     private static final String PACKAGE_SI = "com.google.android.settings.intelligence";
+    private static final String PACKAGE_AIWALLPAPERS = "com.google.android.apps.aiwallpapers";
+    private static final String PACKAGE_BARD = "com.google.android.apps.bard";
+    private static final String PACKAGE_CUSTOMIZATION = "com.google.android.apps.pixel.customizationbundle";
+    private static final String PACKAGE_EMOJIWALLPAPER = "com.google.android.apps.emojiwallpaper";
+    private static final String PACKAGE_LIVEWALLPAPER = "com.google.pixel.livewallpaper";
+    private static final String PACKAGE_MAGICPORTRAIT = "com.google.android.apps.magicportrait";
+    private static final String PACKAGE_MAPS = "com.google.android.apps.maps";
+    private static final String PACKAGE_PIXELCREATIVE = "com.google.android.apps.pixel.creativeassistant";
+    private static final String PACKAGE_PIXELTHEMES = "com.google.android.apps.customization.pixel";
+    private static final String PACKAGE_PIXELWALLPAPER = "com.google.android.apps.wallpaper.pixel";
+    private static final String PACKAGE_SUBSCRIPTION_RED = "com.google.android.apps.subscriptions.red";
+    private static final String PACKAGE_WALLPAPER = "com.google.android.apps.wallpaper";
+    private static final String PACKAGE_WALLPAPEREFFECTS = "com.google.android.wallpaper.effects";
+    private static final String PACKAGE_WEATHER = "com.google.android.apps.weather";
 
     private static final String PROP_HOOKS = "persist.sys.pihooks_";
     private static final String SPOOF_QSB = "persist.sys.pp.qsb";
@@ -85,7 +99,6 @@ public final class PixelPropsUtils {
 
     private static final Map<String, Object> propsToChangeGeneric;
     private static final Map<String, Object> propsToChangeRecentPixel;
-    private static final Map<String, Object> propsToChangePixelTablet;
     private static final Map<String, Object> propsToChangeROG6;
     private static final Map<String, Object> propsToChangeROG6D;
     private static final Map<String, Object> propsToChangeLenovoY700;
@@ -108,28 +121,6 @@ public final class PixelPropsUtils {
             "com.android.chrome",
             "com.breel.wallpapers20",
             "com.disney.disneyplus",
-            "com.google.android.aicore",
-            "com.google.android.apps.accessibility.magnifier",
-            "com.google.android.apps.aiwallpapers",
-            "com.google.android.apps.bard",
-            "com.google.android.apps.customization.pixel",
-            "com.google.android.apps.emojiwallpaper",
-            "com.google.android.apps.nexuslauncher",
-            "com.google.android.apps.pixel.agent",
-            "com.google.android.apps.pixel.creativeassistant",
-            "com.google.android.apps.pixel.nowplaying",
-            "com.google.android.apps.pixel.psi",
-            "com.google.android.apps.pixel.subzero",
-            "com.google.android.apps.pixel.support",
-            "com.google.android.apps.privacy.wildlife",
-            "com.google.android.apps.subscriptions.red",
-            "com.google.android.apps.wallpaper",
-            "com.google.android.apps.wallpaper.pixel",
-            "com.google.android.apps.weather",
-            "com.google.android.googlequicksearchbox",
-            "com.google.android.pcs",
-            "com.google.android.wallpaper.effects",
-            "com.google.pixel.livewallpaper",
             "com.microsoft.android.smsorganizer",
             "com.nhs.online.nhsonline",
             "com.nothing.smartcenter",
@@ -241,8 +232,20 @@ public final class PixelPropsUtils {
     private static final ComponentName GMS_ADD_ACCOUNT_ACTIVITY = ComponentName.unflattenFromString(
             "com.google.android.gms/.auth.uiflows.minutemaid.MinuteMaidActivity");
 
+    private static final Map<String, String> sPixelTenXLProps = Map.of(
+            "PRODUCT", "mustang",
+            "DEVICE", "mustang",
+            "HARDWARE", "mustang",
+            "MANUFACTURER", "Google",
+            "BRAND", "google",
+            "MODEL", "Pixel 10 Pro XL",
+            "ID", "BD3A.251105.010.E1",
+            "FINGERPRINT", "google/mustang/mustang:16/BD3A.251105.010.E1/14337626:user/release-keys"
+    );
+
     private static volatile boolean sIsGms, sIsExcluded;
     private static volatile String sProcessName;
+    private static volatile String sStockFp;
 
     static {
         propsToKeep = new HashMap<>();
@@ -260,16 +263,6 @@ public final class PixelPropsUtils {
         propsToChangeRecentPixel.put("MODEL", "Pixel 10 Pro XL");
         propsToChangeRecentPixel.put("ID", "BD3A.251005.003.W3");
         propsToChangeRecentPixel.put("FINGERPRINT", "google/mustang/mustang:16/BD3A.251005.003.W3/14147046:user/release-keys");
-        propsToChangePixelTablet = new HashMap<>();
-        propsToChangePixelTablet.put("BRAND", "google");
-        propsToChangePixelTablet.put("BOARD", "tangorpro");
-        propsToChangePixelTablet.put("MANUFACTURER", "Google");
-        propsToChangePixelTablet.put("DEVICE", "tangorpro");
-        propsToChangePixelTablet.put("PRODUCT", "tangorpro");
-        propsToChangePixelTablet.put("HARDWARE", "tangorpro");
-        propsToChangePixelTablet.put("MODEL", "Pixel Tablet");
-        propsToChangePixelTablet.put("ID", "BP3A.251005.004.A2");
-        propsToChangePixelTablet.put("FINGERPRINT", "google/tangorpro/tangorpro:16/BP3A.251005.004.A2/14042146:user/release-keys");
         propsToChangeMeizu = new HashMap<>();
         propsToChangeMeizu.put("BRAND", "meizu");
         propsToChangeMeizu.put("MANUFACTURER", "Meizu");
@@ -382,13 +375,98 @@ public final class PixelPropsUtils {
     public static void setProps(Context context) {
         final String packageName = context.getPackageName();
         final String processName = Application.getProcessName();
+
+        String model = SystemProperties.get("ro.product.model");
+        boolean isPixelDevice = SystemProperties.get("ro.soc.manufacturer").equalsIgnoreCase("Google");
+        boolean isTensorDevice = isPixelDevice && model.matches("Pixel (6|7|8|9|10)[a-zA-Z ]*");
+
+        if (TextUtils.isEmpty(packageName) || TextUtils.isEmpty(processName)) {
+            Log.e(TAG, "Null package or process name");
+            return;
+        }
+
+        final Resources res = context.getResources();
+        if (res == null) {
+            Log.e(TAG, "Null resources");
+            return;
+        }
+
+        sStockFp = res.getString(R.string.config_stockFingerprint);
+        if (sStockFp == null || sStockFp.isEmpty()) {
+            sStockFp = SystemProperties.get("ro.build.fingerprint", "");
+        }
+
+        sProcessName = processName;
+
+        /* Set stock fingerprint for ARCore
+         * Set Pixel 10 Pro XL for Specific Google apps
+         */
+
+        switch (packageName) {
+            case PACKAGE_AIWALLPAPERS:
+            case PACKAGE_BARD:
+            case PACKAGE_EMOJIWALLPAPER:
+            case PACKAGE_LIVEWALLPAPER:
+            case PACKAGE_PIXELCREATIVE:
+            case PACKAGE_PIXELTHEMES:
+            case PACKAGE_PIXELWALLPAPER:
+            case PACKAGE_SUBSCRIPTION_RED:
+            case PACKAGE_WALLPAPER:
+            case PACKAGE_WALLPAPEREFFECTS:
+            case PACKAGE_WEATHER:
+            case PACKAGE_CUSTOMIZATION:
+            case PACKAGE_MAGICPORTRAIT:
+            case PACKAGE_MAPS:
+            case PACKAGE_QSB:
+                if (isTensorDevice || !SystemProperties.getBoolean(SPOOF_PP, true)) {
+                    return;
+                } else if (SystemProperties.getBoolean(SPOOF_PP, true)) {
+                    if (packageName.equals(PACKAGE_QSB) && !SystemProperties.getBoolean(SPOOF_QSB, false)) {
+                        return;
+                    }
+                    dlog("Spoofing Pixel 10 Pro XL for: " + packageName + " process: " + processName);
+                    setProps(sPixelTenXLProps);
+                }
+                return;
+            case PACKAGE_ARCORE:
+                if (!sStockFp.isEmpty()) {
+                    dlog("Setting stock fingerprint for: " + packageName);
+                    setPropValue("FINGERPRINT", sStockFp);;
+                }
+                return;
+        }
+    }
+
+    private static void setProps(Map<String, String> props) {
+        props.forEach(PixelPropsUtils::setPropValue);
+    }
+
+    private static void setPropValue(String key, String value) {
+        try {
+            dlog("Setting prop " + key + " to " + value.toString());
+            Class clazz = Build.class;
+            if (key.startsWith("VERSION.")) {
+                clazz = Build.VERSION.class;
+                key = key.substring(8);
+            }
+            Field field = clazz.getDeclaredField(key);
+            field.setAccessible(true);
+            // Cast the value to int if it's an integer field, otherwise string.
+            field.set(null, field.getType().equals(Integer.TYPE) ? Integer.parseInt(value) : value);
+            field.setAccessible(false);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to set prop " + key, e);
+        }
+    }
+
+    public static void setPropsOld(Context context) {
+        final String packageName = context.getPackageName();
+        final String processName = Application.getProcessName();
         Map<String, Object> propsToChange = new HashMap<>();
         sProcessName = processName;
         sIsGms = packageName.equals(PACKAGE_GMS) && processName.equals(PROCESS_GMS_UNSTABLE);
         sIsExcluded = isGoogleCameraPackage(packageName);
         String model = SystemProperties.get("ro.product.model");
-        boolean isPixelDevice = SystemProperties.get("ro.soc.manufacturer").equalsIgnoreCase("Google");
-        boolean isMainlineDevice = isPixelDevice && model.matches("Pixel (8|9|10)[a-zA-Z ]*");
         boolean isPixelGmsEnabled = SystemProperties.getBoolean(SPOOF_GMS, true);
         propsToChangeGeneric.forEach((k, v) -> setPropValue(k, v));
         if (packageName == null || processName == null || packageName.isEmpty()) {
@@ -406,19 +484,7 @@ public final class PixelPropsUtils {
                 }
             }
         } else if (Arrays.asList(packagesToChangeRecentPixel).contains(packageName)) {
-            if (isMainlineDevice || !SystemProperties.getBoolean(SPOOF_PP, true)) {
-                return;
-            } else if (packageName.equals(PACKAGE_QSB)) {
-                if (!SystemProperties.getBoolean(SPOOF_QSB, false)) {
-                    return;
-                }
-            } else if (SystemProperties.getBoolean(SPOOF_PP, true)) {
-                if (isDeviceTablet(context.getApplicationContext())) {
-                    propsToChange.putAll(propsToChangePixelTablet);
-                } else {
-                    propsToChange.putAll(propsToChangeRecentPixel);
-                }
-            }
+            propsToChange.putAll(propsToChangeRecentPixel);
         } else if (Arrays.asList(packagesToChangeMeizu).contains(packageName)) {
             if (SystemProperties.getBoolean(DISGUISE_PROPS_FOR_MUSIC_APP, false)) {
                 propsToChange.putAll(propsToChangeMeizu);
@@ -520,15 +586,6 @@ public final class PixelPropsUtils {
                 }
             }
         }
-    }
-
-    private static boolean isDeviceTablet(Context context) {
-        if (context == null) {
-            return false;
-        }
-        Configuration config = context.getResources().getConfiguration();
-        boolean isTablet = (config.smallestScreenWidthDp >= 600);
-        return isTablet;
     }
 
     private static void setPropValue(String key, Object value) {
