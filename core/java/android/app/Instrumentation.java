@@ -1354,6 +1354,7 @@ public class Instrumentation {
         app.attach(context);
         AttestationHooks.setProps(context);
         PixelPropsUtils.setProps(context);
+        PixelPropsUtils.setPropsOld(context);
         return app;
     }
     
@@ -1373,6 +1374,7 @@ public class Instrumentation {
         app.attach(context);
         AttestationHooks.setProps(context);
         PixelPropsUtils.setProps(context);
+        PixelPropsUtils.setPropsOld(context);
         return app;
     }
 
