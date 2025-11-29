@@ -422,6 +422,7 @@ public final class PixelPropsUtils {
             case PACKAGE_CUSTOMIZATION:
             case PACKAGE_MAGICPORTRAIT:
             case PACKAGE_MAPS:
+            case PACKAGE_NEXUS_LAUNCHER:
             case PACKAGE_QSB:
                 if (isTensorDevice || !SystemProperties.getBoolean(SPOOF_PP, true)) {
                     return;
